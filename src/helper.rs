@@ -12,7 +12,7 @@ pub fn average<T>(numbers: &[T]) -> f32
     0_f32
 }
 
-pub fn more_resent_date(dt1: Option<DateTime<Local>>, dt2: Option<DateTime<Local>>) -> Option<DateTime<Local>>
+pub fn more_recent_date(dt1: Option<DateTime<Local>>, dt2: Option<DateTime<Local>>) -> Option<DateTime<Local>>
 {
     if let Some(d1) = dt1 {
         if let Some(d2) = dt2 {
@@ -64,14 +64,14 @@ mod tests
         let dt2 = Some(Local::now() + Duration::seconds(3));
         let dt3 = Some(Local::now() - Duration::seconds(3));
         let dt4 = None;
-        assert_eq!(more_resent_date(dt1, dt2), dt2);
-        assert_eq!(more_resent_date(dt2, dt1), dt2);
-        assert_eq!(more_resent_date(dt1, dt3), dt1);
-        assert_eq!(more_resent_date(dt2, dt3), dt2);
-        assert_eq!(more_resent_date(dt1, dt4), dt1);
-        assert_eq!(more_resent_date(dt2, dt4), dt2);
-        assert_eq!(more_resent_date(dt3, dt4), dt3);
-        assert_eq!(more_resent_date(dt4, dt4), dt4);
-        assert_eq!(more_resent_date(dt4, dt1), dt1);
+        assert_eq!(more_recent_date(dt1, dt2), dt2);
+        assert_eq!(more_recent_date(dt2, dt1), dt2);
+        assert_eq!(more_recent_date(dt1, dt3), dt1);
+        assert_eq!(more_recent_date(dt2, dt3), dt2);
+        assert_eq!(more_recent_date(dt1, dt4), dt1);
+        assert_eq!(more_recent_date(dt2, dt4), dt2);
+        assert_eq!(more_recent_date(dt3, dt4), dt3);
+        assert_eq!(more_recent_date(dt4, dt4), dt4);
+        assert_eq!(more_recent_date(dt4, dt1), dt1);
     }
 }
