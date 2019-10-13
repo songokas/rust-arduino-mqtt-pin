@@ -6,7 +6,7 @@ use yaml_rust::{Yaml};
 
 use crate::helper::average;
 
-#[derive(Debug, PartialEq, PartialOrd, Clone)]
+#[derive(new, Default, Debug, PartialEq, PartialOrd, Clone)]
 pub struct Temperature
 {
     pub value: f32
@@ -22,10 +22,10 @@ impl Sub for Temperature {
 
 impl Temperature
 {
-    pub fn new(value: f32) -> Temperature
+    /*pub fn new(value: f32) -> Temperature
     {
         Temperature { value }
-    }
+    }*/
 
     pub fn from_yaml(yaml: &Yaml) -> Option<Temperature>
     {
@@ -45,8 +45,7 @@ pub enum PinValue
 {
     Temperature(Temperature),
     Analog(u16),
-    Digital(bool),
-    Timeout(u32)
+    Digital(bool)
 }
 
 impl PinValue
@@ -91,7 +90,7 @@ impl PinValue
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(new, Debug, Clone)]
 pub struct PinState
 {
     pub pin: u8,
@@ -100,8 +99,15 @@ pub struct PinState
     pub until: Option<DateTime<Local>>
 }
 
+impl PinState
+{
+    pub fn is_on(&self)
+    {
+        self.value.is_on()
+    }
+}
 
-#[derive(Debug, Clone)]
+#[derive(new, Debug, Clone)]
 pub struct PinOperation
 {
     pub pin_state: PinState,
@@ -139,7 +145,7 @@ impl PinOperation
 
 }
 
-#[derive(Debug)]
+#[derive(Default, new, Debug)]
 pub struct PinCollection
 {
     states: ArrayDeque<[PinState; 20], Wrapping>,
@@ -148,7 +154,7 @@ pub struct PinCollection
 
 impl PinCollection
 {
-    pub fn new() -> PinCollection
+    pub fn default() -> PinCollection
     {
         PinCollection {states: ArrayDeque::new(), changed: ArrayDeque::new()}
     }
@@ -202,9 +208,15 @@ impl PinCollection
         self.changed.front().map(|s| s.dt)
     }
 
-    pub fn get_last_changed_value(&self) -> Option<u16>
+    pub fn get_last_changed_value(&self) -> Option<PinValue>
     {
-        self.changed.front().and_then(|state| match state.value { PinValue::Digital(v) => Some(v as u16), PinValue::Analog(v) => Some(v), _ => None})
+        self.changed.front().map(|state| state.value.clone());
+        //.and_then(|state| match state.value { PinValue::Digital(v) => Some(v as u16), PinValue::Analog(v) => Some(v), _ => None})
+    }
+
+    pub fn get_last_changed(&self) -> Option<PinState>
+    {
+        self.changed.front();
     }
 }
 
