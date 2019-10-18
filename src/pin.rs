@@ -88,6 +88,11 @@ impl PinValue
     {
         match self { PinValue::Analog(v) => v > &0u16, PinValue::Digital(v) => v == &true, _ => false}
     }
+
+    pub fn as_u16(&self) -> u16
+    {
+        match self { PinValue::Analog(v) => v.clone(), PinValue::Digital(v) => if *v == true { 1u16 } else { 0u16 }, _ => 0u16}
+    }
 }
 
 #[derive(new, Debug, Clone)]
@@ -101,7 +106,7 @@ pub struct PinState
 
 impl PinState
 {
-    pub fn is_on(&self)
+    pub fn is_on(&self) -> bool
     {
         self.value.is_on()
     }
@@ -210,13 +215,13 @@ impl PinCollection
 
     pub fn get_last_changed_value(&self) -> Option<PinValue>
     {
-        self.changed.front().map(|state| state.value.clone());
+        self.changed.front().map(|state| state.value.clone())
         //.and_then(|state| match state.value { PinValue::Digital(v) => Some(v as u16), PinValue::Analog(v) => Some(v), _ => None})
     }
 
-    pub fn get_last_changed(&self) -> Option<PinState>
+    pub fn get_last_changed(&self) -> Option<&PinState>
     {
-        self.changed.front();
+        self.changed.front()
     }
 }
 
