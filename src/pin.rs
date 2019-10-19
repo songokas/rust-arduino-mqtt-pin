@@ -201,11 +201,14 @@ impl PinCollection
         self.states.push_front(state.clone());
     }
 
-    pub fn get_average_temperature(&self) -> Option<Temperature>
+    pub fn get_average_temperature(&self, since: &DateTime<Local>) -> Option<Temperature>
     {
-        let vec: Vec<f32> = self.states.iter().filter_map(|state|
-            if let PinValue::Temperature(v) = state.value.clone() { Some(v.value) } else { None }
-        ).collect();
+        let vec: Vec<f32> = self.states.iter()
+            .filter(|state| state.dt > *since )
+            .filter_map(|state|
+                if let PinValue::Temperature(v) = state.value.clone() { Some(v.value) } else { None }
+            )
+            .collect();
         if vec.len() > 0 {
             return Some(Temperature::new(average(&vec)));
         }
@@ -281,15 +284,18 @@ mod tests
     fn test_pin_collection_get_average_temperature()
     {
         let mut col = PinCollection::default();
-        assert_eq!(col.get_average_temperature(), None);
+        let since = Local::now() - Duration::seconds(100);
+        assert_eq!(col.get_average_temperature(&since), None);
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(20_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(20_f32));
+        assert_eq!(col.get_average_temperature(&since).unwrap(), Temperature::new(20_f32));
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(10_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(15_f32));
+        assert_eq!(col.get_average_temperature(&since).unwrap(), Temperature::new(15_f32));
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(18_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(16_f32));
+        assert_eq!(col.get_average_temperature(&since).unwrap(), Temperature::new(16_f32));
+
+        assert_eq!(col.get_average_temperature(&(since + Duration::seconds(200))), None);
     }
 }
