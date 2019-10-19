@@ -164,6 +164,15 @@ impl PinCollection
         PinCollection {states: ArrayDeque::new(), changed: ArrayDeque::new()}
     }
 
+    pub fn from_states(states: &Vec<PinState>) -> PinCollection
+    {
+        let mut col = PinCollection::default();
+        for state in states {
+            col.push(state);
+        }
+        col
+    }
+
     pub fn push(&mut self, state: &PinState)
     {
         if let PinValue::Digital(v) = state.value {
@@ -192,10 +201,15 @@ impl PinCollection
         self.states.push_front(state.clone());
     }
 
-    pub fn get_average_temperature(&self) -> Temperature
+    pub fn get_average_temperature(&self) -> Option<Temperature>
     {
-        let vec: Vec<f32> = self.states.iter().filter(|state| state.value.is_temperature()).map(|state| if let PinValue::Temperature(v) = state.value.clone() { v.value } else { 0f32 }).collect();
-        Temperature { value: average(&vec) }
+        let vec: Vec<f32> = self.states.iter().filter_map(|state|
+            if let PinValue::Temperature(v) = state.value.clone() { Some(v.value) } else { None }
+        ).collect();
+        if vec.len() > 0 {
+            return Some(Temperature::new(average(&vec)));
+        }
+        None
     }
 
     pub fn is_on(&self) -> bool
@@ -219,9 +233,9 @@ impl PinCollection
         //.and_then(|state| match state.value { PinValue::Digital(v) => Some(v as u16), PinValue::Analog(v) => Some(v), _ => None})
     }
 
-    pub fn get_last_changed(&self) -> Option<&PinState>
+    pub fn get_last_changed(&self) -> Option<PinState>
     {
-        self.changed.front()
+        self.changed.front().map(|state| state.clone())
     }
 }
 
@@ -236,7 +250,7 @@ mod tests
     #[test]
     fn test_pin_collection_is_on_off()
     {
-        let mut col = PinCollection::new();
+        let mut col = PinCollection::default();
         assert_eq!(col.is_on(), false);
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(20.5_f32)), dt: Local::now(), until: None});
@@ -266,16 +280,16 @@ mod tests
     #[test]
     fn test_pin_collection_get_average_temperature()
     {
-        let mut col = PinCollection::new();
-        assert_eq!(col.get_average_temperature(), Temperature::new(0_f32));
+        let mut col = PinCollection::default();
+        assert_eq!(col.get_average_temperature(), None);
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(20_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature(), Temperature::new(20_f32));
+        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(20_f32));
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(10_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature(), Temperature::new(15_f32));
+        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(15_f32));
 
         col.push(&PinState {pin: 3_u8, value: PinValue::Temperature(Temperature::new(18_f32)), dt: Local::now(), until: None});
-        assert_eq!(col.get_average_temperature(), Temperature::new(16_f32));
+        assert_eq!(col.get_average_temperature().unwrap(), Temperature::new(16_f32));
     }
 }
