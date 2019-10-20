@@ -19,13 +19,12 @@ impl Sub for Temperature {
     }
 }
 
-
 impl Temperature
 {
-    /*pub fn new(value: f32) -> Temperature
+    pub fn from_str(str: &str) -> Result<Temperature, String>
     {
-        Temperature { value }
-    }*/
+        Ok(Temperature::new(s.parse::<f32>().map_err(|_| format!("unable to parse temperature {}", s))?))
+    }
 
     pub fn from_yaml(yaml: &Yaml) -> Option<Temperature>
     {
