@@ -21,7 +21,7 @@ impl Sub for Temperature {
 
 impl Temperature
 {
-    pub fn from_str(str: &str) -> Result<Temperature, String>
+    pub fn from_str(s: &str) -> Result<Temperature, String>
     {
         Ok(Temperature::new(s.parse::<f32>().map_err(|_| format!("unable to parse temperature {}", s))?))
     }
