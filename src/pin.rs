@@ -85,16 +85,16 @@ impl PinValue
 
     pub fn is_on(&self) -> bool
     {
-        match self { PinValue::Analog(v) => v > &0u16, PinValue::Digital(v) => v == &true, _ => false}
+        match self { PinValue::Analog(v) => *v > 0u16, PinValue::Digital(v) => *v == true, _ => false}
     }
 
     pub fn as_u16(&self) -> u16
     {
-        match self { PinValue::Analog(v) => v.clone(), PinValue::Digital(v) => if *v == true { 1u16 } else { 0u16 }, _ => 0u16}
+        match self { PinValue::Analog(v) => v.clone(), PinValue::Digital(v) => if *v == true { 1 } else { 0 }, _ => 0}
     }
 }
 
-#[derive(new, Debug, Clone)]
+#[derive(new, Debug, Clone, PartialEq)]
 pub struct PinState
 {
     pub pin: u8,
